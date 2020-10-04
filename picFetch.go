@@ -14,6 +14,8 @@ import (
 	"github.com/rwcarlsen/goexif/exif"
 )
 
+var rowCnt = 0
+
 func handler(w http.ResponseWriter, r *http.Request) {
 	pictureUrl := "http://192.168.1.10/bildvisare/bilderFotoram/"
 	root := "/media/DVDebian/StorageLarge/bilderFotoram/"
@@ -68,7 +70,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	_, err = imgFile.Read(buff)
 
 	filetype := http.DetectContentType(buff)
-	fmt.Println(filetype)
+	fmt.Println("filetype: ", filetype) // image/jpeg, video/mp4,
+
+	writeToGD(fileName)
 
 	metaData, err = exif.Decode(imgFile)
 	if err != nil {
@@ -96,14 +100,17 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 	}
 	fmt.Println(string(jsonData))
+	fmt.Println("Done")
 }
 
 func main() {
-	//var err error
-	//for _, file := range files {
-	//fmt.Println(file)
-	//}
-
+	/*
+	* The browser calls handler for both favicon and the actual page.
+	* This causes the handler routine to be called twice, so run a dummy function
+	* for favicon.
+	 */
+	http.HandleFunc("/favicon.ico", doNothing)
 	http.HandleFunc("/", handler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
+func doNothing(w http.ResponseWriter, r *http.Request) {}
