@@ -69,10 +69,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	buff := make([]byte, 512) // why 512 bytes ? see http://golang.org/pkg/net/http/#DetectContentType
 	_, err = imgFile.Read(buff)
 
-	filetype := http.DetectContentType(buff)
-	fmt.Println("filetype: ", filetype) // image/jpeg, video/mp4,
-
-	writeToGD(fileName)
+	fileType := http.DetectContentType(buff)
+	fmt.Println("filetype: ", fileType) // image/jpeg, video/mp4,
 
 	metaData, err = exif.Decode(imgFile)
 	if err != nil {
@@ -93,6 +91,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	photo.Onlyfilename = fn[len(fn)-1]
 	photo.Pictureurl = pictureUrl
 	photo.Completepictureurl = pictureUrl + photo.Onlyfilename
+
+	writeToGD(fileName, fileType, photo.Exif)
 
 	var jsonData []byte
 	jsonData, err = json.MarshalIndent(photo, "", "    ")

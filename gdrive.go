@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strconv"
+	"time"
 
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -71,7 +71,7 @@ func saveToken(path string, token *oauth2.Token) {
 	json.NewEncoder(f).Encode(token)
 }
 
-func writeToGD(fileName string) {
+func writeToGD(fileName string, fileType string, exifOk bool) {
 	b, err := ioutil.ReadFile("credentials.json")
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v", err)
@@ -85,39 +85,24 @@ func writeToGD(fileName string) {
 	client := getClient(config)
 	fmt.Printf("Write %s to Google Drive\n", fileName)
 
-	sheetsrv, serr := sheets.New(client)
+	sheetsrv, err := sheets.New(client)
 	if err != nil {
 		log.Fatalf("Unable to retrieve Sheets Client %v", err)
 	}
 
 	spreadsheetId := "1qBE9Nf4ePYQrOFsQ5mueSvVwY8JQkTy-CGCG6CByXA0"
+	// Append
+	range2 := "A1"
 
-	//writeRange := "A1"
-	rowCnt++
+	// This appends two rows to the xls
+	values := [][]interface{}{[]interface{}{fileName, fileType, exifOk, time.Now()}}
 
-	//	Sheet1!A1:B2 refers to the first two cells in the top two rows of Sheet1.
-
-	astr := "A" + strconv.Itoa(rowCnt)
-	fmt.Println(astr)
-	/*
-		var myval [2]int
-		values[0] = 1
-		values[1] = 2
-	*/
-	/*
-		var vr sheets.ValueRange
-		myval := []interface{}{values}
-		vr.Values = append(vr.Values, myval)
-	*/
-
-	var vr sheets.ValueRange
-	myval := []interface{}{fileName}
-	vr.Values = append(vr.Values, myval)
-
-	//_, serr = sheetsrv.Spreadsheets.Values.Update(spreadsheetId, astr, &vr).ValueInputOption("RAW").Do()
-	_, serr = sheetsrv.Spreadsheets.Values.Update(spreadsheetId, astr, &vr).ValueInputOption("RAW").Do()
-
-	if serr != nil {
-		log.Fatalf("Unable to retrieve data from sheet. %v", serr)
+	valueInputOption := "USER_ENTERED"
+	rb := &sheets.ValueRange{
+		MajorDimension: "ROWS",
+		Values:         values,
 	}
+	resp, err := sheetsrv.Spreadsheets.Values.Append(spreadsheetId, range2, rb).ValueInputOption(valueInputOption).Do()
+	str := fmt.Sprint(resp)
+	fmt.Println("Response to append: " + str)
 }
