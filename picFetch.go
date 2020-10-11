@@ -99,8 +99,12 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Println(err)
 	}
-	fmt.Println(string(jsonData))
+	fmt.Println("jsonData: " + string(jsonData))
+
+	fmt.Fprintf(w, string(jsonData))
+
 	fmt.Println("Done")
+
 }
 
 func main() {
