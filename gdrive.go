@@ -94,7 +94,7 @@ func writeToGD(fileName string, fileType string, exifOk bool) {
 	// Append
 	range2 := "A1"
 
-	// This appends two rows to the xls
+	// This appends to the xls
 	values := [][]interface{}{[]interface{}{fileName, fileType, exifOk, time.Now()}}
 
 	valueInputOption := "USER_ENTERED"

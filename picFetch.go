@@ -11,7 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rwcarlsen/goexif/exif"
+	//	"github.com/rwcarlsen/goexif/exif"
+	"github.com/xor-gate/goexif2/exif"
 )
 
 var rowCnt = 0
@@ -32,6 +33,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		Orientation        int    `json:"Orientation"`
 		PixelXDimension    int    `json:"PixelXDimension"`
 		PixelYDimension    int    `json:"PixelYDimension"`
+		ImageWidth         int    `json:"ImageWidth"`
+		ImageHeight        int    `json:"ImageHeight"`
 		Make               string `json:"Make"`
 		Model              string `json:"Model"`
 		Filename           string
@@ -68,11 +71,13 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	// Check filetype
 	buff := make([]byte, 512) // why 512 bytes ? see http://golang.org/pkg/net/http/#DetectContentType
 	_, err = imgFile.Read(buff)
-
 	fileType := http.DetectContentType(buff)
 	fmt.Println("filetype: ", fileType) // image/jpeg, video/mp4,
 
 	metaData, err = exif.Decode(imgFile)
+	fmt.Print("Metadata:")
+	fmt.Println(metaData)
+
 	if err != nil {
 		fmt.Println("No exif value found.")
 		photo.Exif = false
@@ -101,7 +106,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println("jsonData: " + string(jsonData))
 
-	fmt.Fprintf(w, string(jsonData))
+	fmt.Fprintf(w, string(jsonData)) // Print on web page
 
 	fmt.Println("Done")
 
