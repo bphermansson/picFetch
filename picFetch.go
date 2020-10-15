@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"math/rand"
@@ -11,16 +12,21 @@ import (
 	"strings"
 	"time"
 
-	//	"github.com/rwcarlsen/goexif/exif"
+	"github.com/rs/cors"
 	"github.com/xor-gate/goexif2/exif"
+	"gopkg.in/yaml.v2"
 )
+
+type Config struct {
+	Paths struct {
+		PictureUrl string `yaml:"pictureUrl"`
+		Root       string `yaml:"root"`
+	} `yaml:"paths"`
+}
 
 var rowCnt = 0
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	pictureUrl := "http://192.168.1.10/bildvisare/bilderFotoram/"
-	root := "/media/DVDebian/StorageLarge/bilderFotoram/"
-
 	var files []string
 	var imgFile *os.File
 	var metaData *exif.Exif
@@ -45,6 +51,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		Error              bool
 	}
 	var photo Photo
+	pictureUrl := "http://192.168.1.10/bildvisare/bilderFotoram/"
+	root := "/media/DVDebian/StorageLarge/bilderFotoram/"
 
 	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		files = append(files, path)
@@ -112,14 +120,98 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func main() {
-	/*
-	* The browser calls handler for both favicon and the actual page.
-	* This causes the handler routine to be called twice, so run a dummy function
-	* for favicon.
-	 */
-	http.HandleFunc("/favicon.ico", doNothing)
-	http.HandleFunc("/", handler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+func (config Config) Run() {
+
+	root := config.Paths.Root
+	fmt.Println("Root: " + root)
+	pictureUrl := config.Paths.PictureUrl
+	fmt.Println("pictureUrl: " + pictureUrl)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/favicon.ico", doNothing)
+	mux.HandleFunc("/", handler)
+
+	//	http.HandleFunc("/favicon.ico", doNothing)
+	//	http.HandleFunc("/", handler)
+
+	newHandler := cors.Default().Handler(mux)
+
+	log.Fatal(http.ListenAndServe(":8080", newHandler))
+
 }
+
+func main() {
+
+	cfgPath, err := ParseFlags()
+	if err != nil {
+		log.Fatal(err)
+	}
+	cfg, err := NewConfig(cfgPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	//fmt.Print(cfg)
+	/*
+		http.HandleFunc("/favicon.ico", doNothing)
+		http.HandleFunc("/", handler)
+		log.Fatal(http.ListenAndServe(":8080", nil))
+	*/
+	//fmt.Print(cfg)
+	cfg.Run()
+}
+
 func doNothing(w http.ResponseWriter, r *http.Request) {}
+
+func ParseFlags() (string, error) {
+	// String that contains the configured configuration path
+	var configPath string
+
+	// Set up a CLI flag called "-config" to allow users
+	// to supply the configuration file
+	flag.StringVar(&configPath, "config", "./config.yml", "path to config file")
+
+	// Actually parse the flags
+	flag.Parse()
+
+	// Validate the path first
+	if err := ValidateConfigPath(configPath); err != nil {
+		return "", err
+	}
+
+	// Return the configuration path
+	return configPath, nil
+}
+
+func NewConfig(configPath string) (*Config, error) {
+	// Create config structure
+	config := &Config{}
+
+	// Open config file
+	file, err := os.Open(configPath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	// Init new YAML decode
+	d := yaml.NewDecoder(file)
+
+	// Start YAML decoding from file
+	if err := d.Decode(&config); err != nil {
+		return nil, err
+	}
+
+	return config, nil
+}
+
+func ValidateConfigPath(path string) error {
+	s, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+	if s.IsDir() {
+		return fmt.Errorf("'%s' is a directory, not a normal file", path)
+	}
+	return nil
+}
