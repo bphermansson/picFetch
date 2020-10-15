@@ -18,3 +18,5 @@ vendor/
 conf.json
 token.json
 credentials.json
+
+git.mod
