@@ -51,10 +51,24 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		Error              bool
 	}
 	var photo Photo
-	pictureUrl := "http://192.168.1.10/bildvisare/bilderFotoram/"
-	root := "/media/DVDebian/StorageLarge/bilderFotoram/"
+	//pictureUrl := "http://192.168.1.10/bildvisare/bilderFotoram/"
+	//root := "/media/DVDebian/StorageLarge/bilderFotoram/"
 
-	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+	cfgPath, err := ParseFlags()
+	if err != nil {
+		log.Fatal(err)
+	}
+	cfg, err := NewConfig(cfgPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Settings:")
+	root := cfg.Paths.Root
+	fmt.Println("Root: " + root)
+	pictureUrl := cfg.Paths.PictureUrl
+	fmt.Println("pictureUrl: " + pictureUrl)
+
+	err = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		files = append(files, path)
 		return nil
 	})
@@ -120,45 +134,40 @@ func handler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (config Config) Run() {
-
-	root := config.Paths.Root
-	fmt.Println("Root: " + root)
-	pictureUrl := config.Paths.PictureUrl
-	fmt.Println("pictureUrl: " + pictureUrl)
-
+//func (config Config) Run() {
+func Run() {
+	/*
+		fmt.Println("Settings:")
+		root := config.Paths.Root
+		fmt.Println("Root: " + root)
+		pictureUrl := config.Paths.PictureUrl
+		fmt.Println("pictureUrl: " + pictureUrl)
+	*/
 	mux := http.NewServeMux()
 	mux.HandleFunc("/favicon.ico", doNothing)
 	mux.HandleFunc("/", handler)
 
-	//	http.HandleFunc("/favicon.ico", doNothing)
-	//	http.HandleFunc("/", handler)
-
 	newHandler := cors.Default().Handler(mux)
-
 	log.Fatal(http.ListenAndServe(":8080", newHandler))
 
 }
 
 func main() {
-
-	cfgPath, err := ParseFlags()
-	if err != nil {
-		log.Fatal(err)
-	}
-	cfg, err := NewConfig(cfgPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	//fmt.Print(cfg)
+	fmt.Println("Start")
 	/*
-		http.HandleFunc("/favicon.ico", doNothing)
-		http.HandleFunc("/", handler)
-		log.Fatal(http.ListenAndServe(":8080", nil))
+		cfgPath, err := ParseFlags()
+		if err != nil {
+			log.Fatal(err)
+		}
+		cfg, err := NewConfig(cfgPath)
+		if err != nil {
+			log.Fatal(err)
+		}
 	*/
-	//fmt.Print(cfg)
-	cfg.Run()
+	//	fmt.Println(cfg)
+
+	//cfg.Run()
+	Run()
 }
 
 func doNothing(w http.ResponseWriter, r *http.Request) {}
