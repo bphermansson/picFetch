@@ -15,7 +15,7 @@
 vendor/
 
 # Settings & secrets
-conf.json
+config.yml
 token.json
 credentials.json
 
