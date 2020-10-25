@@ -25,6 +25,8 @@ type Config struct {
 }
 
 var rowCnt = 0
+var root string
+var pictureUrl string
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	var files []string
@@ -51,24 +53,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		Error              bool
 	}
 	var photo Photo
-	//pictureUrl := "http://192.168.1.10/bildvisare/bilderFotoram/"
-	//root := "/media/DVDebian/StorageLarge/bilderFotoram/"
 
-	cfgPath, err := ParseFlags()
-	if err != nil {
-		log.Fatal(err)
-	}
-	cfg, err := NewConfig(cfgPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("Settings:")
-	root := cfg.Paths.Root
 	fmt.Println("Root: " + root)
-	pictureUrl := cfg.Paths.PictureUrl
-	fmt.Println("pictureUrl: " + pictureUrl)
 
-	err = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+	var err = filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		files = append(files, path)
 		return nil
 	})
@@ -146,6 +134,23 @@ func Run() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/favicon.ico", doNothing)
 	mux.HandleFunc("/", handler)
+
+	//pictureUrl := "http://192.168.1.10/bildvisare/bilderFotoram/"
+	//root := "/media/DVDebian/StorageLarge/bilderFotoram/"
+
+	cfgPath, err := ParseFlags()
+	if err != nil {
+		log.Fatal(err)
+	}
+	cfg, err := NewConfig(cfgPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Settings:")
+	root = cfg.Paths.Root
+	fmt.Println("Root: " + root)
+	pictureUrl = cfg.Paths.PictureUrl
+	fmt.Println("pictureUrl: " + pictureUrl)
 
 	newHandler := cors.Default().Handler(mux)
 	log.Fatal(http.ListenAndServe(":8080", newHandler))
