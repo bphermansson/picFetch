@@ -7,7 +7,8 @@ Install:
 sudo cp picFetch386 /usr/local
 sudo cp picFetch.service /etc/systemd/system/
 sudo systemctl daemon-reload
-sudo systemctl picFetch start
+sudo systemctl start picFetch
+sudo systemctl status picFetch
 
 Config functions is inspired by https://dev.to/koddr/let-s-write-config-for-your-golang-web-app-on-right-way-yaml-5ggp.
 
