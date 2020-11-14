@@ -4,7 +4,7 @@ via a built in web server.
 This is used as a photo provider for a picture viewer setup. 
 
 Install:
-sudo cp picFetch386 /usr/local/bin/
+sudo cp picFetch386 $HOME/go/bin/
 sudo cp picFetch.service /etc/systemd/system/
 sudo systemctl daemon-reload
 sudo systemctl start picFetch
