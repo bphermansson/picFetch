@@ -181,9 +181,18 @@ func ParseFlags() (string, error) {
 	// String that contains the configured configuration path
 	var configPath string
 
+	home, _ := os.UserHomeDir()
+	configfilepath := home + "/.config/config.yml"
+	fmt.Println("Open " + configfilepath)
+
+	if _, err := os.Stat(configfilepath); os.IsNotExist(err) {
+		fmt.Println("Config file config.yml in $HOME/.config/ is missing.")
+		os.Exit(1)
+	}
+
 	// Set up a CLI flag called "-config" to allow users
 	// to supply the configuration file
-	flag.StringVar(&configPath, "config", "./config.yml", "path to config file")
+	flag.StringVar(&configPath, "config", configfilepath, "path to config file")
 
 	// Actually parse the flags
 	flag.Parse()
