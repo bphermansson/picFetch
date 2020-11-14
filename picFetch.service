@@ -7,7 +7,7 @@ Type=simple
 User=patrik
 Group=users
 
-ExecStart=/usr/bin/go run /usr/local/picFetch386
+ExecStart=/usr/bin/go run /usr/local/bin/picFetch386
 # Use SIGINT to stop
 KillSignal=SIGINT
 # Auto restart on crash
