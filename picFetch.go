@@ -153,7 +153,7 @@ func Run() {
 	fmt.Println("pictureUrl: " + pictureUrl)
 
 	newHandler := cors.Default().Handler(mux)
-	log.Fatal(http.ListenAndServe(":8080", newHandler))
+	log.Fatal(http.ListenAndServe("0.0.0.0:8080", newHandler))
 
 }
 
