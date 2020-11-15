@@ -172,6 +172,11 @@ func main() {
 	//	fmt.Println(cfg)
 
 	//cfg.Run()
+	path, err1 := os.Getwd()
+	if err1 != nil {
+		log.Println(err1)
+	}
+	fmt.Println("Path: " + path)
 	Run()
 }
 
